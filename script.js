@@ -41,7 +41,11 @@
 
     let allData = [];
     let musicPlaying = false;
-    let audioCtx = null;
+    const bgAudio = document.getElementById('bgAudio');
+    if (bgAudio) {
+      bgAudio.loop = true;
+      bgAudio.preload = 'auto';
+    }
 
     // ===== ELEMENT SDK =====
     window.elementSdk.init({
@@ -229,45 +233,27 @@
       document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
     }
 
-    // ===== MUSIC (Web Audio API) =====
+    // ===== MUSIC =====
     function startMusic() {
-      try {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        playMelody();
-        musicPlaying = true;
-      } catch(e) {}
-    }
-
-    function playMelody() {
-      if (!audioCtx || audioCtx.state === 'closed') return;
-      // Simple wedding-like melody
-      const notes = [523.25, 587.33, 659.25, 698.46, 783.99, 698.46, 659.25, 587.33];
-      const duration = 0.8;
-      let time = audioCtx.currentTime;
-      notes.forEach((freq, i) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0, time + i * duration);
-        gain.gain.linearRampToValueAtTime(0.08, time + i * duration + 0.1);
-        gain.gain.linearRampToValueAtTime(0, time + (i + 1) * duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(time + i * duration);
-        osc.stop(time + (i + 1) * duration);
+      if (!bgAudio || musicPlaying) return;
+      musicPlaying = true;
+      bgAudio.play().catch((err) => {
+        musicPlaying = false;
+        console.warn('Unable to autoplay background audio:', err);
       });
-      // Loop
-      setTimeout(() => { if (musicPlaying) playMelody(); }, notes.length * duration * 1000 + 500);
     }
 
     function toggleMusic() {
+      if (!bgAudio) return;
       if (musicPlaying) {
         musicPlaying = false;
-        if (audioCtx) audioCtx.close();
-        audioCtx = null;
+        bgAudio.pause();
       } else {
-        startMusic();
+        musicPlaying = true;
+        bgAudio.play().catch((err) => {
+          musicPlaying = false;
+          console.warn('Unable to play background audio:', err);
+        });
       }
     }
 
