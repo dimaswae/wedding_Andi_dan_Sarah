@@ -273,8 +273,14 @@
 
     // ===== LIGHTBOX =====
     function openLightbox(el) {
-      const emoji = el.querySelector('div').textContent.trim();
-      document.getElementById('lightboxContent').textContent = emoji;
+      const img = el.querySelector('img');
+      const lightbox = document.getElementById('lightboxContent');
+      if (img) {
+        lightbox.innerHTML = `<img src="${img.src}" alt="${img.alt || 'Gallery image'}" class="max-w-full max-h-[90vh] rounded-3xl shadow-2xl" />`;
+      } else {
+        const emoji = el.querySelector('div')?.textContent.trim() || '';
+        lightbox.textContent = emoji;
+      }
       document.getElementById('lightbox').classList.add('active');
     }
     function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
